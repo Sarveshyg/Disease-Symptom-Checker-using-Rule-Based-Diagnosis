@@ -54,19 +54,37 @@ set<string> get_user_symptoms()
     {
         cout << "Enter your symptoms one at a time: ";
         getline(cin, userInput);
-        if(userInput == "done" || userInput.empty()){
+        if (userInput == "done" || userInput.empty())
+        {
             break;
         }
         userInput = trim(userInput);
         userDisease.insert(userInput);
     } while (true);
 
-
     return userDisease;
 }
 
-set<string> diagnose(map<string, set<string>>& diseaseRules, set<string>& userSymptoms){
+set<string> diagnose(map<string, set<string>> &diseaseRules, set<string> &userSymptoms)
+{
     set<string> possibleDiseases;
+
+    for (auto &[disease, symptoms] : diseaseRules)
+    {
+        bool allSymptomsMatch = true;
+        for (auto &s : symptoms)
+        {
+            if(userSymptoms.find(s) == userSymptoms.end()){
+                allSymptomsMatch = false;
+                break;
+            }
+        }
+
+        if(allSymptomsMatch)
+            possibleDiseases.insert(disease);
+    }
+
+    return possibleDiseases;
 }
 
 int main()
@@ -77,6 +95,10 @@ int main()
     set<string> userSymptoms = get_user_symptoms();
 
     set<string> userDisease = diagnose(diseaseRules, userSymptoms);
+    cout << "Potential Disease: ";
+    for(auto& ud: userDisease){
+        cout << ud << " ";
+    }
 
     return 0;
 }
