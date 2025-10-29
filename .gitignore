@@ -1,0 +1,104 @@
+# =========================
+# C++ Build Artifacts
+# =========================
+*.o
+*.obj
+*.lo
+*.la
+*.al
+*.libs
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.a
+*.lib
+
+# =========================
+# Build Directories
+# =========================
+/build/
+/Build/
+/bin/
+/Bin/
+/debug/
+/Debug/
+/release/
+/Release/
+/dist/
+/cmake-build*/
+/CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+Testing/
+CTestTestfile.cmake
+
+# =========================
+# Logs and Temporary Files
+# =========================
+*.log
+*.tmp
+*.temp
+*.cache
+*.pid
+*.gz
+*.zip
+*.tar
+*.tar.gz
+*.swp
+*.swo
+*.DS_Store
+
+# =========================
+# IDE and Editor Files
+# =========================
+# VSCode
+.vscode/
+*.code-workspace
+
+# CLion / JetBrains
+.idea/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Code::Blocks
+*.depend
+*.layout
+*.cbp
+*.cbt
+*.cbTemp
+
+# =========================
+# Other OS junk
+# =========================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.nfs*
+
+# =========================
+# Executables or temp test files
+# =========================
+a.out
+main
+test
+temp

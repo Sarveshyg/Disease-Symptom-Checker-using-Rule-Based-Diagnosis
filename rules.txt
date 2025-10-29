@@ -1,0 +1,4 @@
+Flu:fever,cough,headache,body_aches
+CommonCold:cough,runny_nose,sneezing
+Dengue:fever,headache,joint_pain,rash
+Allergy:sneezing,runny_nose,itchy_eyes
