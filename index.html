@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symptom Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div
+      class="flex flex-col mx-auto max-w-lg mt-10 p-4 bg-white rounded shadow-md"
+    >
+      <h1 class="text-2xl font-bold text-center mb-4">Symptom Checker</h1>
+      <textarea
+        id="symptoms"
+        placeholder="Enter symptoms: fever, cough, headache..."
+        class="border p-2 w-full rounded-md"
+        rows="4"
+      ></textarea>
+
+      <button
+        id="diagnose-btn"
+        class="bg-blue-500 text-white py-2 px-4 rounded-md mt-4 hover:bg-blue-600"
+      >
+        Diagnose
+      </button>
+
+      <div id="result-container" class="mt-6">
+        <h2 class="text-xl font-semibold mb-2">Results:</h2>
+        <div id="result" class="divide-y divide-gray-200"></div>
+      </div>
+    </div>
+
+    <script>
+      let symptoms = document.getElementById("symptoms");
+      let diagnose = document.getElementById("diagnose-btn");
+      let res = document.getElementById("result");
+
+      res.addEventListener("click", () => {
+        const symptomList = symptoms.value;
+        const symptomArray = symptomList.split(',').map(symptom => symptom.trim());
+      });
+    </script>
+  </body>
+</html>

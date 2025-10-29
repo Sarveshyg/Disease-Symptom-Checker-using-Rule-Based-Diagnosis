@@ -1,103 +1,93 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include <bits/stdc++.h>
+#include <set>
+#include <string>
 #include <sstream>
+#include <fstream>
+#include <iomanip> 
+
 using namespace std;
 
-string trim(const string &str)
-{
-    size_t start = str.find_first_not_of(" \t");
-    size_t end = str.find_last_not_of(" \t");
-    if (start == string::npos)
-        return "";
-    return str.substr(start, end - start + 1);
-}
+class SymptomChecker {
+private:
+    map<string, set<string>> diseaseRules;
 
-void gather_disease(map<string, set<string>> &diseaseRules)
-{
-    fstream rule("rules.txt", ios::in);
-    string data;
-    if (!rule.is_open())
-    {
-        cerr << "Failed to open the file. Please check if it exists.";
-        return;
+    string trim(const string &str) {
+        size_t start = str.find_first_not_of(" \t");
+        size_t end = str.find_last_not_of(" \t");
+        if (start == string::npos)
+            return "";
+        return str.substr(start, end - start + 1);
     }
-    while (getline(rule, data))
-    {
-        if (data.empty())
-            continue;
 
-        size_t colonPos = data.find(':');
-        if (colonPos == string::npos)
-            continue;
-
-        string diseaseName = trim(data.substr(0, colonPos));
-        string diseaseSymptoms = trim(data.substr(colonPos + 1));
-
-        stringstream ss(diseaseSymptoms);
-        string individualSymptom;
-        while (getline(ss, individualSymptom, ','))
-        {
-            individualSymptom = trim(individualSymptom);
-            diseaseRules[diseaseName].insert(individualSymptom);
+public:
+    void loadRules(const string &filename) {
+        fstream rule(filename, ios::in);
+        if (!rule.is_open()) {
+            cerr << "Error: Failed to open rule file: " << filename << endl;
+            return;
         }
-    }
-}
 
-set<string> get_user_symptoms()
-{
-    set<string> userDisease;
-    string userInput;
+        string data;
+        while (getline(rule, data)) {
+            if (data.empty()) continue;
 
-    do
-    {
-        cout << "Enter your symptoms one at a time: ";
-        getline(cin, userInput);
-        if (userInput == "done" || userInput.empty())
-        {
-            break;
-        }
-        userInput = trim(userInput);
-        userDisease.insert(userInput);
-    } while (true);
+            size_t colonPos = data.find(':');
+            if (colonPos == string::npos) continue;
 
-    return userDisease;
-}
+            string diseaseName = trim(data.substr(0, colonPos));
+            string diseaseSymptoms = trim(data.substr(colonPos + 1));
 
-set<string> diagnose(map<string, set<string>> &diseaseRules, set<string> &userSymptoms)
-{
-    set<string> possibleDiseases;
-
-    for (auto &[disease, symptoms] : diseaseRules)
-    {
-        bool allSymptomsMatch = true;
-        for (auto &s : symptoms)
-        {
-            if(userSymptoms.find(s) == userSymptoms.end()){
-                allSymptomsMatch = false;
-                break;
+            stringstream ss(diseaseSymptoms);
+            string individualSymptom;
+            while (getline(ss, individualSymptom, ',')) {
+                diseaseRules[diseaseName].insert(trim(individualSymptom));
             }
         }
-
-        if(allSymptomsMatch)
-            possibleDiseases.insert(disease);
     }
 
-    return possibleDiseases;
-}
+    map<string, double> diagnose(const set<string> &userSymptoms) {
+        map<string, double> diseaseScores;
+        for (auto &[disease, symptoms] : diseaseRules) {
+            
+            if (symptoms.empty()) continue;
 
-int main()
-{
-    map<string, set<string>> diseaseRules;
-    gather_disease(diseaseRules);
+            int count = 0;
+            for (auto &s : symptoms) {
+                if (userSymptoms.find(s) != userSymptoms.end()) {
+                    count++;
+                }
+            }
+            double percentage = static_cast<double>(count) / symptoms.size();
+            diseaseScores[disease] = percentage;
+        }
+        return diseaseScores;
+    }
+};
 
-    set<string> userSymptoms = get_user_symptoms();
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        cout << "Usage: " << argv[0] << " symptom1 symptom2 symptom3" << endl;
+        return 1;
+    }
 
-    set<string> userDisease = diagnose(diseaseRules, userSymptoms);
-    cout << "Potential Disease: ";
-    for(auto& ud: userDisease){
-        cout << ud << " ";
+    SymptomChecker checker;
+    checker.loadRules("rules.txt");
+
+    set<string> userSymptoms;
+    for (int i = 1; i < argc; ++i) {
+        userSymptoms.insert(string(argv[i]));
+    }
+
+    map<string, double> diseaseScores = checker.diagnose(userSymptoms);
+    
+    cout << fixed << setprecision(2);
+
+    for (auto &[disease, score] : diseaseScores) {
+        if (score > 0) {
+            cout << disease << ":" << score << endl;
+        }
     }
 
     return 0;
