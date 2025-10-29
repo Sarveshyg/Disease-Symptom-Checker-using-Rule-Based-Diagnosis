@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symptom Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .animated-gradient-bg {
+        /* The 4-color gradient */
+        background: linear-gradient(-45deg, #d5c5ff, #a29bfe, #74b9ff, #a29bfe);
+        /* A huge size so the gradient can move */
+        background-size: 400% 400%;
+
+        /* The animation */
+        animation: gradient-shift 15s ease infinite;
+
+        /* Sizing and Positioning */
+        width: 100%;
+        height: 100%;
+        position: fixed; /* Keep it fixed behind everything */
+        top: 0;
+        left: 0;
+        z-index: 0; /* Place it at the very back */
+      }
+
+      @keyframes gradient-shift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- class="bg-white relative overflow-hidden min-h-screen pt-10"> -->
+    <!-- <div
+      class="absolute inset-0 z-0"
+      style="
+        background-image: radial-gradient(
+            circle 600px at 0% 200px,
+            #d5c5ff,
+            transparent
+          ),
+          radial-gradient(circle 600px at 100% 200px, #d5c5ff, transparent);
+      "
+    ></div> -->
+
+    <div class="animated-gradient-bg"></div>
+
+    <div
+      class="flex bg-white/80 backdrop-blur-sm flex-col mt-10 relative z-10 mx-auto max-w-lg mt-10 p-4 bg-white rounded-xl shadow-xl space-y-4"
+    >
+      <img src="../static/logo.png" alt="Checker Logo" class="h-32 w-32 mx-auto mb-2" />
+      <h1 class="text-2xl font-bold text-center">Symptom Checker</h1>
+      <textarea
+        id="symptoms"
+        placeholder="Enter symptoms: fever, cough, headache..."
+        class="w-full bg-white/60 rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        rows="4"
+      ></textarea>
+
+      <button
+        id="diagnose-btn"
+        class="bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg mt-4 hover:bg-blue-700 transition-colors"
+      >
+        Diagnose
+      </button>
+
+      <div id="result-container" class="mt-6">
+        <h2 class="text-xl font-semibold mb-2">Potential Diagnosis:</h2>
+
+        <div id="top-result" class="min-h-[2.5rem]"></div>
+
+        <button id="show-more-btn" class="text-blue-500 mt-2 text-sm hidden">
+          Show other possibilities ↓
+        </button>
+
+        <div
+          id="other-results"
+          class="mt-4 divide-y divide-gray-200 hidden"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      const symptomsEl = document.getElementById("symptoms");
+      const diagnoseBtn = document.getElementById("diagnose-btn");
+      const topResultDiv = document.getElementById("top-result");
+      const otherResultsDiv = document.getElementById("other-results");
+      const showMoreBtn = document.getElementById("show-more-btn");
+
+      diagnoseBtn.addEventListener("click", () => {
+        const symptomsArray = symptomsEl.value
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+
+        topResultDiv.innerHTML = '<p class="text-gray-500">Diagnosing...</p>';
+        otherResultsDiv.innerHTML = "";
+        showMoreBtn.classList.add("hidden");
+        otherResultsDiv.classList.add("hidden");
+
+        fetch("http://127.0.0.1:5000/diagnose", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symptoms: symptomsArray }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const filteredResults = Object.entries(data).filter(
+              ([disease, score]) => score > 0
+            );
+
+            const sortedResults = filteredResults.sort((a, b) => b[1] - a[1]);
+
+            if (sortedResults.length === 0) {
+              topResultDiv.innerHTML =
+                '<p class="text-gray-500">No matches found.</p>';
+              return;
+            }
+
+            const topDisease = sortedResults[0];
+            topResultDiv.innerHTML = `<p class="text-2xl font-bold text-gray-800">${topDisease[0]}</p>`;
+
+            const otherDiseases = sortedResults.slice(1);
+
+            if (otherDiseases.length > 0) {
+              let otherHtml = "";
+              for (const [disease, score] of otherDiseases) {
+                otherHtml += `
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-gray-700">${disease}</span>
+                            <span class="font-semibold text-gray-500">${(
+                              score * 100
+                            ).toFixed(0)}%</span>
+                        </div>
+                    `;
+              }
+              otherResultsDiv.innerHTML = otherHtml;
+              showMoreBtn.classList.remove("hidden");
+              showMoreBtn.textContent = "Show other possibilities ↓";
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            topResultDiv.innerHTML =
+              '<p class="text-red-500">Error: Could not connect to server.</p>';
+          });
+      });
+
+      showMoreBtn.addEventListener("click", () => {
+        otherResultsDiv.classList.toggle("hidden");
+
+        if (otherResultsDiv.classList.contains("hidden")) {
+          showMoreBtn.textContent = "Show other possibilities ↓";
+        } else {
+          showMoreBtn.textContent = "Hide other possibilities ↑";
+        }
+      });
+    </script>
+  </body>
+</html>
